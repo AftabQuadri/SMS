@@ -1,0 +1,36 @@
+package com.user.service.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.user.service.entity.User;
+import com.user.service.repository.UserRepo;
+
+
+@Service
+public class UserServiceImpl implements UserService{
+
+	@Autowired
+	UserRepo userRepo;
+	@Override
+	public com.user.service.entity.User getUserByName(String username) {
+		User user=null;
+		try {
+			user=userRepo.findByusername(username);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		return user;
+	}
+	
+	
+	public User saveUserInDB(User user) {
+		User savedUser=null;
+		try {
+			  savedUser = userRepo.save(user);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		return savedUser;
+	}
+}

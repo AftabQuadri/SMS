@@ -1,0 +1,5 @@
+package com.student.management.interfaces;
+
+public interface UserServiceClient {
+
+}

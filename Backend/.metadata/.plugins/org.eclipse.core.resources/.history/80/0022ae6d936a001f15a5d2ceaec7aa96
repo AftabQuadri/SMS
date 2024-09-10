@@ -1,0 +1,60 @@
+package com.mongo.customcrud.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.stereotype.Service;
+
+import com.mongo.customcrud.entity.Student;
+import com.mongo.customcrud.repository.StudentRepository;
+import com.mongo.customcrud.repository.custom.StudentRepositoryCustom;
+@Service
+public class StudentService {
+	 @Autowired
+	    private StudentRepository studentRepository;
+	 @Autowired
+	 private StudentRepositoryCustom studentRepositoryCustom;
+
+	    public List<Student> getStudentsByExample(Student student) {
+	        Example<Student> example = Example.of(student);
+	        return studentRepository.findAll(example);
+	    }
+	    
+
+	    public List<Student> getAllStudents() {
+	        return studentRepository.findAll();
+	    }
+	    public Student getStudentsById(String id) {
+	        return studentRepository.findById(id).orElse(null);
+	    }
+	    public Student addStudent(Student student) {
+	        return studentRepository.save(student);
+	    }
+	    public List<Student> addStudents(List<Student> students) {
+	        return studentRepository.saveAll(students);
+	    }
+
+	    public List<Student> getStudentsByCustomCriteria(Student student) {
+	        return studentRepositoryCustom.findByCustomCriteria(student);
+	    }
+	    
+	    public void deleteStudent(String id) {
+	        studentRepository.deleteById(id);
+	    }
+	    
+	    
+	    /// custome methods
+	    public void getByName(String name) {
+	    	studentRepository.findByName(name);
+	    }
+	    public void getByEmail(String email) {
+	    	studentRepository.findByName(email);
+	    }
+	    public void getByAge(String age) {
+	    	studentRepository.findByName(age);
+	    }
+	    public void getByCourse(String course) {
+	    	studentRepository.findByName(course);
+	    }
+}

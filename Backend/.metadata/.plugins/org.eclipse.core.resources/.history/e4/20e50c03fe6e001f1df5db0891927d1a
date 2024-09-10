@@ -1,0 +1,16 @@
+package com.student.management.interfaces;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+
+@FeignClient(name = "USERSERVICE") // The service name as registered in Eureka
+public interface UserServiceClient {
+	 @GetMapping("/users/validate-token")
+	    ResponseEntity<String> validateToken(@RequestHeader("Authorization") String token);
+	 
+	 @GetMapping
+	    ResponseEntity<UserDetails> getUserDetailsByUsernam(String username);
+}

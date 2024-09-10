@@ -1,0 +1,12 @@
+package com.user.service.repository;
+
+import java.io.Serializable;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import com.user.service.entity.User;
+
+
+public interface UserRepo extends MongoRepository<User, Serializable> {
+public User findByusername(String username);
+}

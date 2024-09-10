@@ -1,0 +1,64 @@
+package com.mongo.customcrud.repository.custom;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Repository;
+
+import com.mongo.customcrud.entity.Student;
+@Repository
+public class StudentRepositoryCustomImpl implements StudentRepositoryCustom {
+	@Autowired
+	private MongoTemplate mongoTemplate;
+
+	@Override
+	public List<Student> findByCustomCriteria(Student student) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+
+		if (student.getId() != null) {
+			criteria.and("id").is(student.getId());
+		}
+		if (student.getCourse() != null) {
+			criteria.and("course").is(student.getCourse());
+		}
+
+		if (student.getAge() != 0) { 
+			criteria.and("age").is(student.getAge());
+		}
+
+		if (student.getEmail() != null) {
+			criteria.and("email").is(student.getEmail());
+		}
+
+		query.addCriteria(criteria);
+		return mongoTemplate.find(query, Student.class);
+	}
+
+	@Override
+	public List<Student> findByCustomCriteriaExact(Student student) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+
+		if (student.getId() != null) {
+			criteria.and("id").is(student.getId());
+		}
+		if (student.getCourse() != null) {
+			criteria.and("course").is(student.getCourse());
+		}
+
+		if (student.getAge()!=null) { 
+			criteria.and("age").gte(student.getAge());
+		}
+
+		if (student.getEmail() != null) {
+			criteria.and("email").is(student.getEmail());
+		}
+
+		query.addCriteria(criteria);
+		return mongoTemplate.find(query, Student.class);
+	}
+}

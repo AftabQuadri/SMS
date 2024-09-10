@@ -1,0 +1,81 @@
+package com.student.management.filter;
+
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.student.management.interfaces.UserServiceClient;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@Component
+public class JwtValidationFilter extends OncePerRequestFilter {
+    
+    @Autowired
+    private UserServiceClient userServiceClient;
+
+    @Autowired
+    private UserDetailsService userDetailsService; // Assuming this is available for loading user details
+
+    private static final Logger LOG = LoggerFactory.getLogger(JwtValidationFilter.class);
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        
+        final String authorizationHeader = request.getHeader("Authorization");
+        String jwtToken = null;
+        
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            jwtToken = authorizationHeader.substring(7); // Extract the token
+            try {
+                // Validate the token via UserServiceClient
+                ResponseEntity<String> receivedResponse = userServiceClient.validateToken(jwtToken);
+                
+                if (receivedResponse.getStatusCode() == HttpStatus.OK) {
+                    // Extract the username (you may return the username in the response from user service)
+                    String username = receivedResponse.getBody(); // Assuming body contains the username
+
+                    // Load the user details for setting up authentication
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    
+                    if (userDetails != null) {
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        
+                        // Set the authentication object in the SecurityContext
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                        LOG.info("Authentication successful for user: " + username);
+                    }
+                } else {
+                    // Token validation failed
+                    LOG.warn("Token validation failed with status: " + receivedResponse.getStatusCode());
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                    return; // Stop further processing if token validation fails
+                }
+            } catch (Exception e) {
+                LOG.error("Error during JWT validation", e);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                return; // Stop further processing if an exception occurs
+            }
+        }
+
+        // Continue the filter chain for other requests
+        chain.doFilter(request, response);
+    }
+}

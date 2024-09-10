@@ -1,0 +1,164 @@
+package com.student.management.controller;
+
+import java.util.List;
+
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.*;
+
+import com.student.management.entity.Student;
+import com.student.management.entity.User;
+import com.student.management.service.StudentService;
+import com.student.management.util.JwtUtil;
+
+@RestController
+@RequestMapping("/")
+public class StudentController {
+
+	@Autowired
+	private AuthenticationManager authenticationManager;
+    @Autowired
+    private StudentService service;
+    @Autowired
+    private User user;
+    @Autowired
+    private UserDetailsService userDetailsService;
+     
+    @Autowired
+    private JwtUtil jwtUtil;
+    @GetMapping("/home/wc")
+    public String home() {
+    	return "welcome home";
+    }
+//    @PostMapping("add")
+//    public ResponseEntity<String> insertSingleStudent(@RequestBody Student student, Authentication authentication) {
+//        try {
+//            if (authentication != null) {
+//                String userName = authentication.getName();
+//                System.out.println("Authenticated user: " + userName);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during authentication");
+//        }
+//
+//        String message = service.insertStudent(student);
+//        if (message.equalsIgnoreCase("success")) {
+//            return ResponseEntity.status(HttpStatus.CREATED).body("Student added successfully");
+//        }
+//        return ResponseEntity.badRequest().body("There was an error creating a new student");
+//    }
+
+    @PostMapping("add")
+    public ResponseEntity<String> insertSingleStudent(@RequestBody Student student) {
+    	try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    		 if (authentication != null) {
+               String userName = authentication.getName();
+               System.out.println("Authenticated user: " + userName);
+               System.out.println(student);
+               String message = service.insertStudent(student);
+               if (message.equalsIgnoreCase("success")) {
+                   return ResponseEntity.status(HttpStatus.CREATED).body("Student added successfully");
+               }
+               
+           }
+//    			 String userName = authentication.getName();
+
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    	}
+    	
+        return ResponseEntity.badRequest().body("There was an error creating a new student");
+    }
+
+    @GetMapping("getAll")
+    public ResponseEntity<List<Student>> getAllStudents() {
+        List<Student> allStudentsFromDB = service.getAllStudents();
+        if (allStudentsFromDB!=null && !allStudentsFromDB.isEmpty() ) {
+            return ResponseEntity.ok(allStudentsFromDB);
+        }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    
+
+    @GetMapping("get/{id}")
+    public ResponseEntity<Student> getStudentById(@PathVariable String id) {
+        Student studentFromDB = service.getStudentById(id);
+        if (studentFromDB != null) {
+            return new ResponseEntity<>(studentFromDB, HttpStatus.OK);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+
+    @PutMapping("update")
+    public ResponseEntity<String> updateStudent(@RequestBody Student student) {
+        String message = service.updateStudent(student);
+        if (message.equalsIgnoreCase("success")) {
+            return new ResponseEntity<>("Student updated successfully", HttpStatus.OK);
+        }
+        return ResponseEntity.badRequest().body("There was an error updating the student");
+    }
+
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<String> deleteStudentById(@PathVariable String id) {
+        String message = service.deleteById(id);
+        if (message.equalsIgnoreCase("success")) {
+            return ResponseEntity.ok("Student deleted successfully");
+        }
+        return ResponseEntity.badRequest().body("There was an error deleting the student");
+    }
+
+    @DeleteMapping("deleteAll")
+    public ResponseEntity<String> deleteAllStudents() {
+        String message = service.deleteAll();
+        if (message.equalsIgnoreCase("success")) {
+            return ResponseEntity.ok("All students deleted successfully");
+        }
+        return ResponseEntity.badRequest().body("There was an error deleting all students");
+    }
+    
+    @PostMapping("token")
+    public String getToken() {
+    	return "fuck this is token";
+    }
+    @PostMapping("signup")
+    public void signUp() {
+    	
+    }
+    @PostMapping("login")
+    public void logIn() {
+    	
+    }
+
+    @PostMapping("gettoken")
+    public String generateToken(@RequestBody User user) {
+        try {
+        	System.out.println(user);
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+               
+            );
+            System.out.println(user);
+            if (authentication.isAuthenticated()) {
+                return jwtUtil.generateToken(user.getUsername());
+            } else {
+                throw new UsernameNotFoundException("Invalid user request!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new UsernameNotFoundException("Invalid user request!");
+        }
+    }
+
+}

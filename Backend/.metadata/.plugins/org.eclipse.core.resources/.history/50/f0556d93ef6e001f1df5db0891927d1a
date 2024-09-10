@@ -1,0 +1,11 @@
+package com.user.service.service;
+
+import com.user.service.entity.User;
+
+public interface UserService {
+
+	public User getUserByName(String username);
+
+	public User saveUserInDB(User user);
+
+}

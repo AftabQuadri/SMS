@@ -1,0 +1,5 @@
+package com.student.management.repo;
+
+public class UserRepo {
+
+}

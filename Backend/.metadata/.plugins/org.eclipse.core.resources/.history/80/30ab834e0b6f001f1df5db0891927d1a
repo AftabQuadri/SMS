@@ -1,0 +1,21 @@
+package com.student.management.interfaces;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+
+import com.student.management.config.FeignConfig;
+@FeignClient(name = "USERSERVICE", configuration = FeignConfig.class)
+public interface UserServiceClient {
+	 @PostMapping("/users/validate-token")
+	    ResponseEntity<String> validateToken(@RequestHeader("Authorization") String token);
+	 
+	 @PostMapping("/users/get-user-details")
+	    ResponseEntity<UserDetails> getUserDetailsByUsernam(String username);
+	 
+	     
+	 
+
+}

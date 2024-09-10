@@ -1,0 +1,61 @@
+package com.user.service.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import com.user.service.entity.User;
+import com.user.service.repository.UserRepo;
+import com.user.service.util.JwtUtil;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+	@Autowired
+	UserRepo userRepo;
+
+	@Autowired
+	private JwtUtil jwtUtil;
+
+	@Autowired
+	private UserDetailsServiceImpl userDetailsServiceImpl;
+
+	@Override
+	public User getUserByName(String username) {
+		User user = null;
+		try {
+			user = userRepo.findByusername(username);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return user;
+	}
+
+	@Override
+	public User saveUserInDB(User user) {
+		User savedUser = null;
+		try {
+			savedUser = userRepo.save(user);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return savedUser;
+	}
+
+	public ResponseEntity<String> validateToken(String token) {
+		try {
+			String username = jwtUtil.extractUsername(token);
+			UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
+			if (jwtUtil.validateToken(token)) {
+				return ResponseEntity.ok(username);
+			} else {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token");
+			}
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token");
+		}
+	}
+
+}

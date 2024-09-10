@@ -1,0 +1,18 @@
+package com.student.management.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.student.management.entity.User;
+import com.student.management.repo.UserRepo;
+
+@Service
+public class UserService {
+
+	@Autowired
+	UserRepo userRepo;
+	public User getUserByName(String username) {
+		User user = userRepo.findByusername(username);
+		return user;
+	}
+}

@@ -1,0 +1,99 @@
+package com.student.management.service;
+
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+import com.netflix.discovery.converters.Auto;
+import com.student.management.entity.Student;
+import com.student.management.repo.StudentRepo;
+
+@Service
+public class StudentServiceImpl implements StudentService{
+
+    @Autowired
+    private StudentRepo studentRepo;
+    private final RestTemplate restTemplate;
+    
+    public StudentServiceImpl(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+
+    public List<Student> getAllStudents() {
+        return studentRepo.findAll();
+    }
+
+    public Student getStudentById(String id) {
+        Optional<Student> studentById = studentRepo.findById(id);
+        return studentById.orElse(null);
+    }
+
+    public String insertStudent(Student student) {
+        Student result = studentRepo.save(student);
+        return result != null ? "success" : "error";
+    }
+
+    public String updateStudent(Student student) {
+        if (studentRepo.existsById(student.getId())) {
+            Student result = studentRepo.save(student);
+            return result != null ? "success" : "error";
+        }
+        return "error: student not found";
+    }
+
+    public String deleteStudent(Student student) {
+        try {
+            studentRepo.delete(student);
+            return "success";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error: unable to delete student";
+        }
+    }
+
+    public String deleteById(String id) {
+        if (studentRepo.existsById(id)) {
+            try {
+                studentRepo.deleteById(id);
+                return "success";
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "error: unable to delete student";
+            }
+        }
+        return "error: student not found";
+    }
+
+    @Transactional
+    public String deleteAll() {
+        try {
+            studentRepo.deleteAll();
+            return "success";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error: unable to delete all students";
+        }
+    }
+    
+    
+
+    @Override
+    public ResponseEntity<String> validateToken(String jwtToken) {
+        String url = "http://USERSERVICE/users/validate-token";
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + jwtToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        return restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+    }
+
+}

@@ -1,0 +1,5 @@
+package com.user.service.util;
+
+public class JwtUtil {
+
+}

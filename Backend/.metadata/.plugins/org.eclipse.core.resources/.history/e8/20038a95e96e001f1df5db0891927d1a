@@ -1,0 +1,12 @@
+spring.application.name=StudentService
+spring.data.mongodb.host=localhost
+spring.data.mongodb.port=27017
+spring.data.mongodb.database=StudentsDB
+server.port=9998
+logging.level.org.springframework.security=DEBUG
+logging.level.org.springframework.web.filter=DEBUG
+logging.level.com.student.management=DEBUG
+
+boot.admin.client.url=http://localhost:1111/
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+management.endpoints.web.exposure.include=*

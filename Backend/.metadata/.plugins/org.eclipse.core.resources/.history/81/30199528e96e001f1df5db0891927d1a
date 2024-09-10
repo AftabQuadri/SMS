@@ -1,0 +1,59 @@
+package com.student.management.filter;
+
+import java.io.IOException;
+import java.net.http.HttpHeaders;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.student.management.interfaces.UserServiceClient;
+import com.student.management.util.JwtUtil;
+import com.user.service.filter.JwtFilter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@Component
+public class JwtValidationFilter extends OncePerRequestFilter {
+    @Autowired
+    private UserServiceClient userServiceClient;
+
+    private static final Logger LOG = LoggerFactory.getLogger(JwtValidationFilter.class);
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        final String authorizationHeader = request.getHeader("Authorization");
+        String jwtToken = null;
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            jwtToken = authorizationHeader.substring(7);
+
+
+                try {
+                    ResponseEntity<String> receivedResponse = userServiceClient.validateToken("Bearer " + jwtToken);
+                    if(receivedResponse.getStatusCode()==HttpStatus.OK) {
+                    	LOG.info("authentication successful");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            
+        chain.doFilter(request, response);
+    }
+}

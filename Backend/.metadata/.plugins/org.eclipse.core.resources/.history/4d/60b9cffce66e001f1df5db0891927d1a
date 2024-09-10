@@ -1,0 +1,8 @@
+spring.application.name=UserService
+server.port=9999
+spring.data.mongodb.host=localhost
+spring.data.mongodb.port=27017
+spring.data.mongodb.database=StudentsDB
+logging.level.org.springframework.security=DEBUG
+logging.level.org.springframework.web.filter=DEBUG
+logging.level.com.student.management=DEBUG
